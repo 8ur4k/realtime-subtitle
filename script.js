@@ -2,11 +2,42 @@ document.addEventListener('DOMContentLoaded', () => {
     const subtitleElement = document.getElementById('subtitle');
     const sourceLanguageSelect = document.getElementById('source-language');
     const targetLanguageSelect = document.getElementById('target-language');
+    const backgroundToggleButton = document.getElementById('background-toggle');
     
     let sourceLanguage = 'tr'; // Varsayılan kaynak dil: Türkçe
     let targetLanguage = 'tr'; // Varsayılan hedef dil: Türkçe
     let recognition = null; // Aktif tanıma nesnesini global olarak tut
     let isRecognitionActive = false; // Tanımanın aktif olup olmadığını izle
+    let isBackgroundActive = false; // Arkaplan durumu
+    
+    // Yerel depolamadan arkaplan durumunu kontrol et
+    const savedBackgroundState = localStorage.getItem('subtitleBackground');
+    if (savedBackgroundState === 'true') {
+        isBackgroundActive = true;
+        // Başlangıçta metin olmadığı için arkaplanı eklemiyoruz
+        // Sadece buton metnini değiştiriyoruz, active class eklenmeyecek
+        backgroundToggleButton.textContent = 'ARKAPLAN: AÇIK';
+    }
+    
+    // Arkaplan toggle butonuna tıklama olayı ekle
+    backgroundToggleButton.addEventListener('click', () => {
+        isBackgroundActive = !isBackgroundActive;
+        
+        if (isBackgroundActive) {
+            // Sadece altyazıda metin varsa arkaplanı göster
+            if (subtitleElement.textContent.trim() !== '') {
+                subtitleElement.classList.add('with-background');
+            }
+            // Active class'ı eklemiyoruz, sadece buton metnini değiştiriyoruz
+            backgroundToggleButton.textContent = 'ARKAPLAN: AÇIK';
+            localStorage.setItem('subtitleBackground', 'true');
+        } else {
+            subtitleElement.classList.remove('with-background');
+            // Active class'ı kaldırmaya gerek yok çünkü hiç eklemedik
+            backgroundToggleButton.textContent = 'ARKAPLAN: KAPALI';
+            localStorage.setItem('subtitleBackground', 'false');
+        }
+    });
     
     // Dil seçimi değişikliklerini dinle
     sourceLanguageSelect.addEventListener('change', function() {
@@ -210,6 +241,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Önceki animasyonları durdur ve altyazıyı görünür yap
                 subtitleElement.style.opacity = 1;
                 subtitleElement.textContent = text.toUpperCase();
+                
+                // Arkaplan aktifse göster
+                if (isBackgroundActive) {
+                    subtitleElement.classList.add('with-background');
+                }
+            } else {
+                // Yazı boşsa arkaplanı kaldır
+                subtitleElement.classList.remove('with-background');
+                subtitleElement.textContent = '';
             }
         }
         
@@ -222,6 +262,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 subtitleElement.textContent = '';
                 subtitleElement.style.transition = '';
                 subtitleElement.style.opacity = 1;
+                // Yazı silindiğinde arkaplanı da kaldır
+                subtitleElement.classList.remove('with-background');
             }, 500);
         }
         
