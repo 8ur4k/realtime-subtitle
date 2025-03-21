@@ -54,56 +54,113 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Dil kodu eşleştiricisi (Web Speech API için)
     const languageCodeMap = {
-        'tr': 'tr-TR',
-        'en': 'en-US',
-        'de': 'de-DE',
-        'fr': 'fr-FR',
-        'es': 'es-ES',
-        'it': 'it-IT',
-        'ru': 'ru-RU',
-        'zh': 'zh-CN',
-        'ja': 'ja-JP',
-        'ar': 'ar-SA',
-        'no': 'no-NO',
-        'hi': 'hi-IN',
-        'bn': 'bn-IN',
-        'pt': 'pt-PT',
-        'ur': 'ur-PK',
-        'id': 'id-ID',
-        'ko': 'ko-KR',
-        'vi': 'vi-VN',
-        'fa': 'fa-IR',
-        'pl': 'pl-PL',
-        'nl': 'nl-NL',
-        'th': 'th-TH',
-        'sv': 'sv-SE',
-        'el': 'el-GR',
-        'ro': 'ro-RO',
-        'cs': 'cs-CZ',
-        'fi': 'fi-FI',
-        'he': 'he-IL',
-        'am': 'am-ET',
-        'hy': 'hy-AM',
-        'ka': 'ka-GE',
-        'uk': 'uk-UA',
-        'ml': 'ml-IN',
-        'ta': 'ta-IN',
-        'te': 'te-IN',
-        'mr': 'mr-IN',
-        'km': 'km-KH',
-        'lo': 'lo-LA',
-        'my': 'my-MM',
-        'si': 'si-LK',
-        'ne': 'ne-NP',
-        'gu': 'gu-IN',
-        'kn': 'kn-IN',
-        'ps': 'ps-AF',
-        'ky': 'ky-KG',
-        'mn': 'mn-MN',
-        'yi': 'yi',
-        'dv': 'dv-MV',
-        'tg': 'tg-TJ',
-        'ug': 'ug-CN'
+        'af': 'af-ZA',   // Afrikaanca
+        'am': 'am-ET',   // Amharca
+        'ar': 'ar-SA',   // Arapça
+        'az': 'az-AZ',   // Azerice
+        'be': 'be-BY',   // Belarusça
+        'bg': 'bg-BG',   // Bulgarca
+        'bn': 'bn-IN',   // Bengalce
+        'bs': 'bs-BA',   // Boşnakça
+        'ca': 'ca-ES',   // Katalanca
+        'ceb': 'ceb-PH', // Cebuano
+        'co': 'co-FR',   // Korsikaca
+        'cs': 'cs-CZ',   // Çekçe
+        'cy': 'cy-GB',   // Galce
+        'da': 'da-DK',   // Danca
+        'de': 'de-DE',   // Almanca
+        'dv': 'dv-MV',   // Divehi
+        'el': 'el-GR',   // Yunanca
+        'en': 'en-US',   // İngilizce
+        'eo': 'eo',      // Esperanto
+        'es': 'es-ES',   // İspanyolca
+        'et': 'et-EE',   // Estonca
+        'eu': 'eu-ES',   // Baskça
+        'fa': 'fa-IR',   // Farsça
+        'fi': 'fi-FI',   // Fince
+        'fr': 'fr-FR',   // Fransızca
+        'ga': 'ga-IE',   // İrlandaca
+        'gd': 'gd-GB',   // İskoç Gaelcesi
+        'gl': 'gl-ES',   // Galiçyaca
+        'gu': 'gu-IN',   // Gujarati
+        'ha': 'ha-NG',   // Hausa
+        'haw': 'haw-US', // Hawaii Dili
+        'he': 'he-IL',   // İbranice
+        'hi': 'hi-IN',   // Hintçe
+        'hmn': 'hmn',    // Hmong
+        'hr': 'hr-HR',   // Hırvatça
+        'hu': 'hu-HU',   // Macarca
+        'hy': 'hy-AM',   // Ermenice
+        'id': 'id-ID',   // Endonezce
+        'ig': 'ig-NG',   // İbo Dili
+        'is': 'is-IS',   // İzlandaca
+        'it': 'it-IT',   // İtalyanca
+        'ja': 'ja-JP',   // Japonca
+        'jw': 'jw-ID',   // Cava Dili
+        'ka': 'ka-GE',   // Gürcüce
+        'kg': 'kg-CG',   // Kikongo
+        'kk': 'kk-KZ',   // Kazakça
+        'km': 'km-KH',   // Kamboçyaca
+        'kn': 'kn-IN',   // Kannada
+        'ko': 'ko-KR',   // Korece
+        'ku': 'ku-TR',   // Kürtçe
+        'ky': 'ky-KG',   // Kırgızca
+        'la': 'la',      // Latince
+        'lb': 'lb-LU',   // Lüksemburgca
+        'lo': 'lo-LA',   // Laoca
+        'lt': 'lt-LT',   // Litvanca
+        'lv': 'lv-LV',   // Letonca
+        'mg': 'mg-MG',   // Malgaşça
+        'mi': 'mi-NZ',   // Maori
+        'mk': 'mk-MK',   // Makedonca
+        'ml': 'ml-IN',   // Malayalam
+        'mn': 'mn-MN',   // Moğolca
+        'mr': 'mr-IN',   // Marathi
+        'ms': 'ms-MY',   // Malayca
+        'mt': 'mt-MT',   // Maltaca
+        'my': 'my-MM',   // Birmanca
+        'ne': 'ne-NP',   // Nepalce
+        'nl': 'nl-NL',   // Hollandaca
+        'no': 'no-NO',   // Norveççe
+        'ny': 'ny-MW',   // Chichewa
+        'or': 'or-IN',   // Odia
+        'pa': 'pa-IN',   // Pencapça
+        'pl': 'pl-PL',   // Lehçe
+        'ps': 'ps-AF',   // Peştuca
+        'pt': 'pt-PT',   // Portekizce
+        'ro': 'ro-RO',   // Romence
+        'ru': 'ru-RU',   // Rusça
+        'rw': 'rw-RW',   // Kinyarwanda
+        'sd': 'sd-PK',   // Sindhi
+        'si': 'si-LK',   // Sinhala
+        'sk': 'sk-SK',   // Slovakça
+        'sl': 'sl-SI',   // Slovence
+        'sm': 'sm-WS',   // Samoa Dili
+        'sn': 'sn-ZW',   // Shona
+        'so': 'so-SO',   // Somalice
+        'sq': 'sq-AL',   // Arnavutça
+        'sr': 'sr-RS',   // Sırpça
+        'st': 'st-LS',   // Sesotho
+        'su': 'su-ID',   // Sundaca
+        'sv': 'sv-SE',   // İsveççe
+        'sw': 'sw-KE',   // Svahili
+        'ta': 'ta-IN',   // Tamilce
+        'te': 'te-IN',   // Telugu
+        'tg': 'tg-TJ',   // Tacikçe
+        'th': 'th-TH',   // Tayca
+        'tk': 'tk-TM',   // Türkmence
+        'tl': 'fil-PH',  // Filipince (Tagalog)
+        'tr': 'tr-TR',   // Türkçe
+        'tt': 'tt-RU',   // Tatarca
+        'ug': 'ug-CN',   // Uygurca
+        'uk': 'uk-UA',   // Ukraynaca
+        'ur': 'ur-PK',   // Urduca
+        'uz': 'uz-UZ',   // Özbekçe
+        'vi': 'vi-VN',   // Vietnamca
+        'xh': 'xh-ZA',   // Zosa
+        'yi': 'yi',      // Yidiş
+        'zh': 'zh-CN',   // Çince (Mandarin)
+        'zu': 'zu-ZA'    // Zulu
     };
     
     // Tanımayı tamamen durdurma fonksiyonu
