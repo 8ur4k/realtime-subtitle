@@ -4,6 +4,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const targetLanguageSelect = document.getElementById('target-language');
     const backgroundToggleButton = document.getElementById('background-toggle');
     const resetSettingsButton = document.getElementById('reset-settings');
+    const toggleRecognitionButton = document.getElementById('toggle-recognition');
     
     // Varsayılan değerler
     let sourceLanguage = localStorage.getItem('sourceLanguage') || 'tr'; // Varsayılan kaynak dil: Türkçe
@@ -11,6 +12,10 @@ document.addEventListener('DOMContentLoaded', () => {
     let recognition = null; // Aktif tanıma nesnesini global olarak tut
     let isRecognitionActive = false; // Tanımanın aktif olup olmadığını izle
     let isBackgroundActive = false; // Arkaplan durumu
+    let isRecognitionPaused = localStorage.getItem('recognitionPaused') === 'true'; // Tanıma durduruldu mu
+    let displayTimeoutId = null; // Küresel olarak tanımlanmış zamanlayıcı
+    let translationTimeout = null; // Küresel olarak tanımlanmış çeviri zamanlayıcısı
+    let fadeTimeoutId = null; // Küresel olarak tanımlanmış solma zamanlayıcısı
     
     // Sayfa yüklendiğinde select elementlerinin değerlerini ayarla
     sourceLanguageSelect.value = sourceLanguage;
@@ -41,7 +46,60 @@ document.addEventListener('DOMContentLoaded', () => {
             targetLanguage = savedTargetLanguage;
             targetLanguageSelect.value = savedTargetLanguage;
         }
+        
+        // Tanıma durumunu yükle
+        isRecognitionPaused = localStorage.getItem('recognitionPaused') === 'true';
+        updateRecognitionButton();
     }
+    
+    // Tanıma butonunu güncelle
+    function updateRecognitionButton() {
+        if (isRecognitionPaused) {
+            toggleRecognitionButton.textContent = 'BAŞLAT';
+            toggleRecognitionButton.classList.remove('active');
+            toggleRecognitionButton.classList.add('inactive');
+        } else {
+            toggleRecognitionButton.textContent = 'DURDUR';
+            toggleRecognitionButton.classList.add('active');
+            toggleRecognitionButton.classList.remove('inactive');
+        }
+    }
+    
+    // Tanıma durumunu değiştir
+    function toggleRecognition() {
+        isRecognitionPaused = !isRecognitionPaused;
+        localStorage.setItem('recognitionPaused', isRecognitionPaused);
+        
+        updateRecognitionButton();
+        
+        if (isRecognitionPaused) {
+            // Önce tüm zamanlayıcıları temizle
+            clearTimeout(displayTimeoutId);
+            clearTimeout(translationTimeout);
+            clearTimeout(fadeTimeoutId);
+            
+            // Sonra tanımayı durdur
+            stopRecognition();
+            
+            // Kullanıcıya bilgi ver
+            subtitleElement.textContent = 'ALTYAZI DURDURULDU';
+            
+            // Arkaplan aktifse göster
+            if (isBackgroundActive) {
+                subtitleElement.classList.add('with-background');
+            }
+        } else {
+            // Tanımayı yeniden başlat
+            subtitleElement.textContent = '';
+            subtitleElement.classList.remove('with-background');
+            setTimeout(() => {
+                setupSpeechRecognition();
+            }, 300);
+        }
+    }
+    
+    // Tanımayı başlat/durdur butonuna tıklama olayı ekle
+    toggleRecognitionButton.addEventListener('click', toggleRecognition);
     
     // Ayarları sıfırla fonksiyonu
     function resetSettings() {
@@ -49,17 +107,20 @@ document.addEventListener('DOMContentLoaded', () => {
         localStorage.removeItem('sourceLanguage');
         localStorage.removeItem('targetLanguage');
         localStorage.removeItem('subtitleBackground');
+        localStorage.removeItem('recognitionPaused');
         
         // Varsayılan değerlere dön
         sourceLanguage = 'tr';
         targetLanguage = 'tr';
         isBackgroundActive = false;
+        isRecognitionPaused = false;
         
         // Arayüzü güncelle
         sourceLanguageSelect.value = 'tr';
         targetLanguageSelect.value = 'tr';
         backgroundToggleButton.textContent = 'ARKAPLAN: KAPALI';
         subtitleElement.classList.remove('with-background');
+        updateRecognitionButton();
         
         console.log("Ayarlar sıfırlandı");
         
@@ -222,14 +283,23 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Tanımayı tamamen durdurma fonksiyonu
     function stopRecognition() {
-        if (recognition && isRecognitionActive) {
+        if (recognition) {
             try {
-                recognition.stop();
-                console.log("Tanıma durduruldu");
+                // Event listener'ları temizle
+                recognition.onresult = null;
+                recognition.onend = null;
+                recognition.onerror = null;
+                recognition.onstart = null;
+                
+                // Tanımayı sonlandır
+                recognition.abort();
+                console.log("Tanıma tamamen durduruldu");
             } catch (e) {
                 console.warn("Tanıma durdurulurken hata:", e);
+            } finally {
+                recognition = null;
+                isRecognitionActive = false;
             }
-            isRecognitionActive = false;
         }
     }
     
@@ -271,6 +341,12 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Konuşma tanıma
     function setupSpeechRecognition() {
+        // Eğer tanıma duraklatılmışsa, başlatma
+        if (isRecognitionPaused) {
+            console.log("Tanıma duraklatılmış durumda, başlatılmıyor");
+            return;
+        }
+        
         // Web Speech API tarayıcı desteğini kontrol et
         if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
             subtitleElement.textContent = 'Tarayıcınız konuşma tanımayı desteklemiyor.';
@@ -295,12 +371,14 @@ document.addEventListener('DOMContentLoaded', () => {
         
         let currentText = '';
         let lastFinalText = '';
-        let displayTimeoutId = null;
-        let translationTimeout = null;
-        let fadeTimeoutId = null;
         
         // Konuşma sonuçlarını dinle
         recognition.onresult = async (event) => {
+            // Eğer duraklatıldıysa, sonuçları işleme
+            if (isRecognitionPaused) {
+                return;
+            }
+            
             // Geçici sonuç (henüz kesinleşmemiş kelimeler)
             let interimTranscript = '';
             // Kesinleşmiş sonuç
@@ -328,6 +406,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 // Anlık çeviri talebi oluştur (her yeni kelimede tüm metni çevir)
                 translationTimeout = setTimeout(async () => {
+                    // Duraklatıldıysa çevirme
+                    if (isRecognitionPaused) {
+                        return;
+                    }
+                    
                     // Kaynak ve hedef dil aynıysa doğrudan metni göster
                     if (sourceLanguage === targetLanguage) {
                         updateSubtitle(currentText);
@@ -343,6 +426,11 @@ document.addEventListener('DOMContentLoaded', () => {
             if (finalTranscript && finalTranscript !== '') {
                 clearTimeout(displayTimeoutId);
                 displayTimeoutId = setTimeout(() => {
+                    // Duraklatıldıysa temizleme
+                    if (isRecognitionPaused) {
+                        return;
+                    }
+                    
                     fadeOutSubtitle();
                     lastFinalText = '';
                     currentText = '';
@@ -428,14 +516,25 @@ document.addEventListener('DOMContentLoaded', () => {
             console.log("Konuşma tanıma sona erdi");
             isRecognitionActive = false;
             
-            // Eğer sistemin kendisi bitirdiyse, yeniden başlat
-            setTimeout(() => {
-                startRecognition();
-            }, 300);
+            // Duraklatılmışsa yeniden başlatma
+            if (!isRecognitionPaused) {
+                // Eğer sistemin kendisi bitirdiyse, yeniden başlat
+                setTimeout(() => {
+                    startRecognition();
+                }, 300);
+            } else {
+                console.log("Tanıma duraklatılmış, yeniden başlatılmıyor");
+            }
         };
         
         // Tanımayı başlatma fonksiyonu
         function startRecognition() {
+            // Eğer tanıma duraklatılmışsa, başlatma
+            if (isRecognitionPaused) {
+                console.log("Tanıma duraklatılmış, başlatılmıyor");
+                return;
+            }
+            
             if (!isRecognitionActive) {
                 try {
                     recognition.start();
@@ -448,7 +547,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     } else {
                         // Diğer hatalar için biraz bekle ve tekrar dene
                         setTimeout(() => {
-                            startRecognition();
+                            if (!isRecognitionPaused) {
+                                startRecognition();
+                            }
                         }, 1000);
                     }
                 }
@@ -461,6 +562,17 @@ document.addEventListener('DOMContentLoaded', () => {
         startRecognition();
     }
     
-    // Konuşma tanımayı başlat
-    setupSpeechRecognition();
+    // Başlangıçta tanıma butonunu doğru duruma getir
+    updateRecognitionButton();
+    
+    // Eğer tanıma duraklatılmamışsa, konuşma tanımayı başlat
+    if (!isRecognitionPaused) {
+        setupSpeechRecognition();
+    } else {
+        // Duraklatılmışsa, kullanıcıya bildir
+        subtitleElement.textContent = 'ALTYAZI DURDURULDU';
+        if (isBackgroundActive) {
+            subtitleElement.classList.add('with-background');
+        }
+    }
 }); 
