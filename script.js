@@ -4,19 +4,40 @@ document.addEventListener('DOMContentLoaded', () => {
     const targetLanguageSelect = document.getElementById('target-language');
     const backgroundToggleButton = document.getElementById('background-toggle');
     
+    // Varsayılan değerler
     let sourceLanguage = 'tr'; // Varsayılan kaynak dil: Türkçe
     let targetLanguage = 'tr'; // Varsayılan hedef dil: Türkçe
     let recognition = null; // Aktif tanıma nesnesini global olarak tut
     let isRecognitionActive = false; // Tanımanın aktif olup olmadığını izle
     let isBackgroundActive = false; // Arkaplan durumu
     
-    // Yerel depolamadan arkaplan durumunu kontrol et
-    const savedBackgroundState = localStorage.getItem('subtitleBackground');
-    if (savedBackgroundState === 'true') {
-        isBackgroundActive = true;
-        // Başlangıçta metin olmadığı için arkaplanı eklemiyoruz
-        // Sadece buton metnini değiştiriyoruz, active class eklenmeyecek
-        backgroundToggleButton.textContent = 'ARKAPLAN: AÇIK';
+    // Yerel depolamadan ayarları yükle
+    loadSettingsFromLocalStorage();
+    
+    // Ayarları yerel depolamadan yükle
+    function loadSettingsFromLocalStorage() {
+        // Arkaplan durumunu yükle
+        const savedBackgroundState = localStorage.getItem('subtitleBackground');
+        if (savedBackgroundState === 'true') {
+            isBackgroundActive = true;
+            // Başlangıçta metin olmadığı için arkaplanı eklemiyoruz
+            // Sadece buton metnini değiştiriyoruz, active class eklenmeyecek
+            backgroundToggleButton.textContent = 'ARKAPLAN: AÇIK';
+        }
+        
+        // Kaynak dil ayarını yükle
+        const savedSourceLanguage = localStorage.getItem('sourceLanguage');
+        if (savedSourceLanguage) {
+            sourceLanguage = savedSourceLanguage;
+            sourceLanguageSelect.value = savedSourceLanguage;
+        }
+        
+        // Hedef dil ayarını yükle
+        const savedTargetLanguage = localStorage.getItem('targetLanguage');
+        if (savedTargetLanguage) {
+            targetLanguage = savedTargetLanguage;
+            targetLanguageSelect.value = savedTargetLanguage;
+        }
     }
     
     // Arkaplan toggle butonuna tıklama olayı ekle
@@ -42,6 +63,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // Dil seçimi değişikliklerini dinle
     sourceLanguageSelect.addEventListener('change', function() {
         sourceLanguage = this.value;
+        localStorage.setItem('sourceLanguage', sourceLanguage);
+        
         stopRecognition(); // Önce mevcut tanımayı durdur
         setTimeout(() => { // Kısa bir bekleme sonrası yeniden başlat
             setupSpeechRecognition();
@@ -50,6 +73,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     targetLanguageSelect.addEventListener('change', function() {
         targetLanguage = this.value;
+        localStorage.setItem('targetLanguage', targetLanguage);
     });
     
     // Dil kodu eşleştiricisi (Web Speech API için)
