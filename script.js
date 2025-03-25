@@ -3,13 +3,18 @@ document.addEventListener('DOMContentLoaded', () => {
     const sourceLanguageSelect = document.getElementById('source-language');
     const targetLanguageSelect = document.getElementById('target-language');
     const backgroundToggleButton = document.getElementById('background-toggle');
+    const resetSettingsButton = document.getElementById('reset-settings');
     
     // Varsayılan değerler
-    let sourceLanguage = 'tr'; // Varsayılan kaynak dil: Türkçe
-    let targetLanguage = 'tr'; // Varsayılan hedef dil: Türkçe
+    let sourceLanguage = localStorage.getItem('sourceLanguage') || 'tr'; // Varsayılan kaynak dil: Türkçe
+    let targetLanguage = localStorage.getItem('targetLanguage') || 'tr'; // Varsayılan hedef dil: Türkçe
     let recognition = null; // Aktif tanıma nesnesini global olarak tut
     let isRecognitionActive = false; // Tanımanın aktif olup olmadığını izle
     let isBackgroundActive = false; // Arkaplan durumu
+    
+    // Sayfa yüklendiğinde select elementlerinin değerlerini ayarla
+    sourceLanguageSelect.value = sourceLanguage;
+    targetLanguageSelect.value = targetLanguage;
     
     // Yerel depolamadan ayarları yükle
     loadSettingsFromLocalStorage();
@@ -20,8 +25,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const savedBackgroundState = localStorage.getItem('subtitleBackground');
         if (savedBackgroundState === 'true') {
             isBackgroundActive = true;
-            // Başlangıçta metin olmadığı için arkaplanı eklemiyoruz
-            // Sadece buton metnini değiştiriyoruz, active class eklenmeyecek
             backgroundToggleButton.textContent = 'ARKAPLAN: AÇIK';
         }
         
@@ -39,6 +42,36 @@ document.addEventListener('DOMContentLoaded', () => {
             targetLanguageSelect.value = savedTargetLanguage;
         }
     }
+    
+    // Ayarları sıfırla fonksiyonu
+    function resetSettings() {
+        // LocalStorage'dan ayarları temizle
+        localStorage.removeItem('sourceLanguage');
+        localStorage.removeItem('targetLanguage');
+        localStorage.removeItem('subtitleBackground');
+        
+        // Varsayılan değerlere dön
+        sourceLanguage = 'tr';
+        targetLanguage = 'tr';
+        isBackgroundActive = false;
+        
+        // Arayüzü güncelle
+        sourceLanguageSelect.value = 'tr';
+        targetLanguageSelect.value = 'tr';
+        backgroundToggleButton.textContent = 'ARKAPLAN: KAPALI';
+        subtitleElement.classList.remove('with-background');
+        
+        console.log("Ayarlar sıfırlandı");
+        
+        // Tanımayı varsayılan dille yeniden başlat
+        stopRecognition();
+        setTimeout(() => {
+            setupSpeechRecognition();
+        }, 300);
+    }
+    
+    // Sıfırlama butonuna olay dinleyicisi ekle
+    resetSettingsButton.addEventListener('click', resetSettings);
     
     // Arkaplan toggle butonuna tıklama olayı ekle
     backgroundToggleButton.addEventListener('click', () => {
