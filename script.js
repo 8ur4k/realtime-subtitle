@@ -264,6 +264,7 @@ document.addEventListener('DOMContentLoaded', () => {
         let lastFinalText = '';
         let displayTimeoutId = null;
         let translationTimeout = null;
+        let fadeTimeoutId = null;
         
         // Konuşma sonuçlarını dinle
         recognition.onresult = async (event) => {
@@ -302,7 +303,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         const translatedText = await translateText(currentText, sourceLanguage, targetLanguage);
                         updateSubtitle(translatedText);
                     }
-                }, 200); // Çok sık çeviri istekleri yapılmasını önlemek için küçük bir gecikme
+                }, 200);
             }
             
             // Konuşma durduğunda bir süre sonra metni temizle
@@ -319,7 +320,11 @@ document.addEventListener('DOMContentLoaded', () => {
         // Altyazıyı güncelle
         function updateSubtitle(text) {
             if (text.trim() !== '') {
+                // Önceki zamanlayıcıları temizle
+                clearTimeout(fadeTimeoutId);
+                
                 // Önceki animasyonları durdur ve altyazıyı görünür yap
+                subtitleElement.style.transition = '';
                 subtitleElement.style.opacity = 1;
                 subtitleElement.textContent = text.toUpperCase();
                 
@@ -336,10 +341,13 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // Altyazıyı yumuşak bir şekilde kaybet
         function fadeOutSubtitle() {
+            // Önceki zamanlayıcıları temizle
+            clearTimeout(fadeTimeoutId);
+            
             subtitleElement.style.transition = 'opacity 0.5s ease';
             subtitleElement.style.opacity = 0;
             
-            setTimeout(() => {
+            fadeTimeoutId = setTimeout(() => {
                 subtitleElement.textContent = '';
                 subtitleElement.style.transition = '';
                 subtitleElement.style.opacity = 1;
