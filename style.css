@@ -86,25 +86,6 @@ body, html {
     justify-content: center;
     text-shadow: -2px 0 black, 0 2px black, 2px 0 black, 0 -2px black;
     line-height: 1.2;
-    flex-wrap: wrap; /* Kelimelerin alt satıra geçmesini sağlar */
-}
-
-/* Kelime stilleri */
-.subtitle-word {
-    display: inline-block;
-    margin: 0 5px;
-    transition: opacity 0.5s ease;
-    opacity: 1;
-}
-
-/* Yeni kelime geldiğinde animasyon */
-@keyframes wordFadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
-}
-
-.subtitle-word {
-    animation: wordFadeIn 0.3s ease-out;
 }
 
 /* Kamera seçim ekranı stilleri */
@@ -215,27 +196,6 @@ body, html {
 }
 
 .background-toggle-button:hover {
-    background-color: rgba(0, 0, 0, 0.8);
-}
-
-/* Kelime süre butonu stilleri */
-#word-time-duration {
-    background-color: rgba(0, 0, 0, 0.6);
-    color: white;
-    padding: 10px 15px;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 16px;
-    font-weight: bold;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
-    transition: background-color 0.3s;
-    text-align: center;
-    width: 100%;
-    margin-top: 10px;
-    z-index: 100;
-}
-
-#word-time-duration:hover {
     background-color: rgba(0, 0, 0, 0.8);
 }
 
